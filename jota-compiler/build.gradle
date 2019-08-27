@@ -1,25 +1,48 @@
-plugins {
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.41'
+buildscript {
+    ext.ktVersion = "1.3.41"
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        google()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$ktVersion"
+    }
+
+    apply plugin: "maven"
+    group = "com.bloder"
+    version = "0.1"
 }
 
-group 'com.bloder'
-version '0.0.1'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: "kotlin-kapt"
+apply plugin: 'maven-publish'
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$ktVersion"
+    compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$ktVersion"
+
+    compileOnly "com.google.auto.service:auto-service:1.0-rc4"
+    kapt "com.google.auto.service:auto-service:1.0-rc4"
 }
