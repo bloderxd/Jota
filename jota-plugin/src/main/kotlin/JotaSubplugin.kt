@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 private const val GROUP_ID = "com.bloder"
 private const val ARTIFACT = "jota-kotlin-plugin"
 private const val VERSION = "0.1"
+private const val PLUGIN_ID = "jota"
 
 @AutoService(KotlinGradleSubplugin::class)
 class JotaSubplugin : KotlinGradleSubplugin<AbstractCompile> {
@@ -20,7 +21,7 @@ class JotaSubplugin : KotlinGradleSubplugin<AbstractCompile> {
         kotlinCompilation: KotlinCompilation<KotlinCommonOptions>?
     ): List<SubpluginOption> = listOf()
 
-    override fun getCompilerPluginId(): String = "jota"
+    override fun getCompilerPluginId(): String = PLUGIN_ID
 
     override fun getPluginArtifact(): SubpluginArtifact = SubpluginArtifact(
         groupId = GROUP_ID,
