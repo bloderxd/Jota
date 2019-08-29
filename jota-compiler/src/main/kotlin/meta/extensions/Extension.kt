@@ -1,6 +1,7 @@
 package arrow.meta.extensions
 
-import arrow.meta.qq.QuoteTransformation
+import arrow.meta.ir.IrUtils
+import arrow.meta.qq.Transformation
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.analyzer.ModuleInfo
 import org.jetbrains.kotlin.backend.common.BackendContext
@@ -38,6 +39,7 @@ import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.BindingTrace
+import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
@@ -147,6 +149,7 @@ interface ExtensionPhase {
   interface StorageComponentContainer : ExtensionPhase {
     fun CompilerContext.registerModuleComponents(
       container: org.jetbrains.kotlin.container.StorageComponentContainer,
+      platform: TargetPlatform,
       moduleDescriptor: ModuleDescriptor
     ) : Unit
 
@@ -224,7 +227,7 @@ class CompilerContext(
   lateinit var bindingTrace: BindingTrace
   lateinit var componentProvider: ComponentProvider
 
-  val transformations: ArrayList<QuoteTransformation<*>> = arrayListOf()
+  val transformations: ArrayList<Transformation<*>> = arrayListOf()
 
   private val descriptorPhaseState = ConcurrentHashMap<FqName, ClassDescriptor>()
 

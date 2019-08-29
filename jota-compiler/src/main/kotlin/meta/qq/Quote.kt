@@ -3,11 +3,22 @@ package arrow.meta.qq
 import arrow.meta.extensions.CompilerContext
 import arrow.meta.extensions.ExtensionPhase
 import arrow.meta.extensions.MetaComponentRegistrar
+import org.jetbrains.kotlin.com.intellij.psi.impl.source.tree.PsiWhiteSpaceImpl
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
+import org.jetbrains.kotlin.psi.KtVisitor
+
+/**
+ * A tree transformation given an existing ktElement
+ */
+data class Transformation<out K>(
+  val oldDescriptor: K,
+  val newDeclarations: List<KtDeclaration>
+)
 
 /**
  * A declaration quasi quote matches tree in the synthetic resolution and gives
@@ -54,7 +65,7 @@ interface Quote<P : KtElement, K : KtElement, S> {
 
   fun K.cleanUserQuote(quoteDeclaration: String): String = quoteDeclaration
 
-  fun process(ktElement: K): QuoteTransformation<K>? {
+  fun process(ktElement: K): Transformation<K>? {
     return if (ktElement.match()) {
       // a new scope is transformed
       val transformedScope = transform(ktElement)
@@ -66,7 +77,7 @@ interface Quote<P : KtElement, K : KtElement, S> {
         declaration
       }
       if (declarations.isEmpty()) null
-      else QuoteTransformation(ktElement, declarations)
+      else Transformation(ktElement, declarations)
     } else null
   }
 
@@ -109,10 +120,10 @@ inline fun <reified K : KtElement, P : KtElement, S> CompilerContext.processFile
   quoteFactory: Quote.Factory<P, K, S>,
   noinline match: K.() -> Boolean,
   noinline map: S.(K) -> List<String>
-): List<Pair<KtFile, ArrayList<QuoteTransformation<K>>>> {
+): List<Pair<KtFile, ArrayList<Transformation<K>>>> {
   return files.map { file ->
     val mutatingDocument = file.viewProvider.document
-    val mutations = arrayListOf<QuoteTransformation<K>>()
+    val mutations = arrayListOf<Transformation<K>>()
     if (mutatingDocument != null) {
       file.accept(object : MetaTreeVisitor() {
         override fun visitKtElement(element: KtElement) {
@@ -133,7 +144,7 @@ inline fun <reified K : KtElement, P : KtElement, S> CompilerContext.processFile
   }
 }
 
-inline fun <reified K : KtElement> java.util.ArrayList<KtFile>.updateFiles(fileMutations: List<Pair<KtFile, java.util.ArrayList<QuoteTransformation<K>>>>) {
+inline fun <reified K : KtElement> java.util.ArrayList<KtFile>.updateFiles(fileMutations: List<Pair<KtFile, java.util.ArrayList<Transformation<K>>>>) {
   fileMutations.forEach { (file, mutations) ->
     if (mutations.isNotEmpty()) {
       val newSource = file.sourceWithTransformations(mutations)
@@ -144,7 +155,7 @@ inline fun <reified K : KtElement> java.util.ArrayList<KtFile>.updateFiles(fileM
   }
 }
 
-fun <K : KtElement> KtFile.sourceWithTransformations(mutations: ArrayList<QuoteTransformation<K>>): String =
+fun <K : KtElement> KtFile.sourceWithTransformations(mutations: ArrayList<Transformation<K>>): String =
   mutations.fold(text) { acc, transformation ->
     val originalSource = transformation.oldDescriptor.text
     val newSource = transformation.newDeclarations.joinToString("\n\n") { it.text }
