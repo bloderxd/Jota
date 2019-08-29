@@ -5,8 +5,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.plugin.*
 
 private const val GROUP_ID = "com.bloder"
-private const val ARTIFACT = "jota-kotlin-plugin"
-private const val VERSION = "0.1"
+private const val ARTIFACT = "jota-compiler"
+private const val VERSION = "0.0.1"
 private const val PLUGIN_ID = "jota"
 
 @AutoService(KotlinGradleSubplugin::class)
