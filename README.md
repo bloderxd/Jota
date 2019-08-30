@@ -16,9 +16,7 @@ class Foo {
   }
   
   private fun handleAction(@When action: Action.Success) = println("Success")
-
   private fun handleAction(@When action: Action.NetworkError) = println("NetworkError")
-
   private fun handleAction(@When action: Action.ParsingError) = println("ParsingError")
 }
 ```
