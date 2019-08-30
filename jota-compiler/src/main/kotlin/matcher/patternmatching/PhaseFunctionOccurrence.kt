@@ -1,4 +1,4 @@
-package matcher
+package matcher.function
 
 data class PhaseFunctionOccurrence(
     val max: Int,
