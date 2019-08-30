@@ -7,7 +7,7 @@ import matcher.DeclarativePatternMatchingPlugin
 internal val MetaComponentRegistrar.adt get() = with(DeclarativePatternMatchingPlugin) {
     meta(
         classOrObject(
-            match = { true },
+            match = { isSealed() },
             map = { c ->
                 if (sealedVariants.isNotEmpty()) adt.addAll(sealedVariants)
                 listOf(c.text)
