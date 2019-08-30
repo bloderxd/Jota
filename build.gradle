@@ -1,7 +1,25 @@
+buildscript {
+    ext.ktVersion = "1.3.41"
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        google()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$ktVersion"
+        classpath "com.bloder:jota-plugin:0.1"
+    }
+
+}
+
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.3.41'
 }
+
+apply plugin: "jota-plugin"
 
 group 'com.bloder'
 version '0.0.1'
@@ -10,11 +28,13 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation "com.bloder:jota:0.0.1"
 }
 
 compileKotlin {

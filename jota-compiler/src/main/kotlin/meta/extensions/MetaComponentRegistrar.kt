@@ -1,17 +1,21 @@
 package arrow.meta.extensions
 
 import arrow.meta.higherkind.KindAwareTypeChecker
+import arrow.meta.utils.setFinalStatic
 import arrow.meta.utils.NoOp3
 import arrow.meta.utils.NoOp6
 import arrow.meta.utils.NullableOp1
-import arrow.meta.utils.setFinalStatic
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.analyzer.ModuleInfo
 import org.jetbrains.kotlin.backend.common.BackendContext
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.codegen.*
+import org.jetbrains.kotlin.codegen.ClassBuilder
+import org.jetbrains.kotlin.codegen.ClassBuilderFactory
+import org.jetbrains.kotlin.codegen.DelegatingClassBuilder
+import org.jetbrains.kotlin.codegen.ImplementationBodyCodegen
+import org.jetbrains.kotlin.codegen.StackValue
 import org.jetbrains.kotlin.codegen.extensions.ClassBuilderInterceptorExtension
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.com.intellij.mock.MockProject
@@ -27,7 +31,14 @@ import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.context.ProjectContext
-import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor
+import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.DiagnosticSink
 import org.jetbrains.kotlin.extensions.CompilerConfigurationExtension
@@ -47,7 +58,6 @@ import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
-import org.jetbrains.kotlin.resolve.diagnostics.MutableDiagnosticsWithSuppression
 import org.jetbrains.kotlin.resolve.extensions.SyntheticResolveExtension
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.JvmDeclarationOrigin
 import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
@@ -202,7 +212,7 @@ interface MetaComponentRegistrar : ComponentRegistrar {
     }
 
   fun storageComponent(
-    registerModuleComponents: CompilerContext.(container: StorageComponentContainer, moduleDescriptor: ModuleDescriptor) -> Unit,
+    registerModuleComponents: CompilerContext.(container: StorageComponentContainer, platform: TargetPlatform, moduleDescriptor: ModuleDescriptor) -> Unit,
     check: CompilerContext.(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) -> Unit
   ): ExtensionPhase.StorageComponentContainer =
     object : ExtensionPhase.StorageComponentContainer {
@@ -214,8 +224,8 @@ interface MetaComponentRegistrar : ComponentRegistrar {
         check(declaration, descriptor, context)
       }
 
-      override fun CompilerContext.registerModuleComponents(container: StorageComponentContainer, moduleDescriptor: ModuleDescriptor) {
-        registerModuleComponents(container, moduleDescriptor)
+      override fun CompilerContext.registerModuleComponents(container: StorageComponentContainer, platform: TargetPlatform, moduleDescriptor: ModuleDescriptor) {
+        registerModuleComponents(container, platform, moduleDescriptor)
       }
     }
 
@@ -334,7 +344,7 @@ interface MetaComponentRegistrar : ComponentRegistrar {
 
   private fun registerKindAwareTypeChecker(): ExtensionPhase.StorageComponentContainer =
     storageComponent(
-      registerModuleComponents = { container, moduleDescriptor ->
+      registerModuleComponents = { container, platform, moduleDescriptor ->
         println("registerModuleComponents")
         val defaultTypeChecker = KotlinTypeChecker.DEFAULT
         if (defaultTypeChecker !is KindAwareTypeChecker) { //nasty hack ahead to circumvent the ability to replace the Kotlin type checker
@@ -349,7 +359,7 @@ interface MetaComponentRegistrar : ComponentRegistrar {
 
   fun compilerContextService(): ExtensionPhase.StorageComponentContainer =
     storageComponent(
-      registerModuleComponents = { container, moduleDescriptor ->
+      registerModuleComponents = { container, platform, moduleDescriptor ->
         container.useInstance(this)
       },
       check = { declaration, descriptor, context ->
@@ -474,8 +484,8 @@ interface MetaComponentRegistrar : ComponentRegistrar {
   ) {
     //println("Project allowed extensions: ${Extensions.getArea(project).extensionPoints.toList().joinToString("\n")}")
     val messageCollector: MessageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
-    val ctx = CompilerContext(project, messageCollector)
     MESSAGE.testMessageCollector = messageCollector
+    val ctx = CompilerContext(project, messageCollector)
 //    project.picoContainer.componentAdapters.filterIsInstance<ComponentAdapter>().forEach {
 //      println("Compiler Service: <${it.componentKey}> : ${it.componentImplementation}")
 //    }
@@ -754,17 +764,9 @@ interface MetaComponentRegistrar : ComponentRegistrar {
     })
   }
 
-  fun CompilerContext.suppressDiagnostic(f: (Diagnostic) -> Boolean): Unit {
-    (bindingTrace.bindingContext.diagnostics as? MutableDiagnosticsWithSuppression)?.let {
-      val diagnosticList = it.getOwnDiagnostics() as ArrayList<Diagnostic>
-      diagnosticList.removeIf(f)
-    }
-  }
-
   class DelegatingContributorChecker(val phase: ExtensionPhase.StorageComponentContainer, val ctx: CompilerContext) : StorageComponentContainerContributor, DeclarationChecker {
-
     override fun registerModuleComponents(container: StorageComponentContainer, platform: TargetPlatform, moduleDescriptor: ModuleDescriptor) {
-      phase.run { ctx.registerModuleComponents(container, moduleDescriptor) }
+      phase.run { ctx.registerModuleComponents(container, platform, moduleDescriptor) }
     }
 
     override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
