@@ -1,4 +1,4 @@
-package matcher.function
+package matcher.patternmatching
 
 data class FunctionInfo(
     val type: String,
