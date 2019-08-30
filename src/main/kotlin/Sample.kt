@@ -1,21 +1,27 @@
 class Sample {
 
     fun sample() {
-        val action: Bloder = Bloder.Bloder1
+        val action: Action = Action.NetworkError
         print("")
         handle(action)
     }
 
-    private fun handle(@When action: Bloder.Bloder1) {
-        println("Foo2")
+    private fun handle(@When action: Action.Success) {
+        println("Success")
     }
 
-    private fun handle(@When action: Bloder.Bloder2) {
-        println("Foo1")
+    private fun handle(@When action: Action.NetworkError) {
+        println("NetworkError")
+    }
+
+    private fun handle(@When action: Action.ParsingError) {
+        println("ParsingError")
     }
 }
 
-sealed class Bloder {
-    object Bloder1 : Bloder()
-    object Bloder2 : Bloder()
+sealed class Action {
+    object Success : Action()
+    object NetworkError : Action()
+    object ParsingError : Action()
+    object Other : Action()
 }
