@@ -1,6 +1,8 @@
 # Jota
 #### A way to uncouple algebraic data type checks
 
+This project is still in beta and is being tested and improved.
+
 ```kotlin
 sealed class Action {
   object Success
@@ -70,3 +72,11 @@ then now if you have more types, you just need to worry about create new functio
 
 private fun handleAction(@When action: Action.JsonFieldError) = println("JsonFieldError")
 ```
+
+## Internals
+
+Jota uses a mocked abstraction of [Arrow Meta Prototype](https://github.com/47deg/arrow-meta-prototype) to resolve compiler plugin internals and will be correctly imported when it's released.
+
+## Contributions
+
+Contributions are welcome, bugs and features should be reported by issues in this repository.
