@@ -1,8 +1,7 @@
 class Sample {
 
     fun sample() {
-        val action: Action = Action.NetworkError
-        print("")
+        val action: Action = Action.Success
         handle(action)
     }
 
