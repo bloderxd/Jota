@@ -48,7 +48,7 @@ Here we have the same behavior that we've created with Jota but with explicity t
 
 ## The problem
 
-As said before this kind of explicitly type checking solution breaks a very important best practice, the `Open Closed Principle` that tell us that our code `should be opened for extension but closed for modification` and that means that we shouldn't have to modify our `getAction` function every time we create more types and handling but have a solution that we just care about extend our handling.
+As said before this kind of explicitly type checking solution breaks a very important best practice, the `Open Closed Principle` that tell us that our code `should be opened for extension but closed for modification` and that means that we shouldn't have to modify our `run` function with something like `is Action.Type -> {}` every time we create more types but have a solution that we just care about extension like create new functions.
 
 ## Jota solution
 
