@@ -83,3 +83,21 @@ Jota uses a mocked abstraction of [Arrow Meta Prototype](https://github.com/47de
 ## Contributions
 
 Contributions are welcome, bugs and features should be reported by issues in this repository.
+
+## Import
+
+In your buildScript dependency config add:
+
+```groovy
+dependencies {
+  classpath "com.bloder:jota-plugin:0.0.1"
+}
+```
+And in your build gradle dependency 
+```groovy
+apply plugin: "jota-plugin"
+
+dependencies {
+  implementation "com.bloder:jota:0.0.1"
+}
+```
