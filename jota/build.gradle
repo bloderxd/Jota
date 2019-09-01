@@ -1,5 +1,8 @@
 buildscript {
     ext.ktVersion = "1.3.41"
+    ext.jotaVersion = "0.0.1"
+    ext.jotaGroupId = "com.bloder"
+    ext.jotaArtifact = "jota"
     repositories {
         mavenLocal()
         mavenCentral()
@@ -9,11 +12,12 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$ktVersion"
+        classpath 'com.novoda:bintray-release:0.9'
     }
 
     apply plugin: "maven"
-    group = "com.bloder"
-    version = "0.0.1"
+    group = jotaGroupId
+    version = jotaVersion
 }
 
 plugins {
@@ -22,9 +26,7 @@ plugins {
 }
 
 apply plugin: 'maven-publish'
-
-group 'com.bloder'
-version '0.0.1'
+apply plugin: 'com.novoda.bintray-release'
 
 publishing {
     publications {
@@ -50,4 +52,14 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+publish {
+    userOrg = 'bloder'
+    repoName = 'Jota'
+    groupId = jotaGroupId
+    artifactId = jotaArtifact
+    publishVersion = jotaVersion
+    desc = 'Declarative pattern matching solution to algebraic data types in Kotlin programming'
+    website = 'https://github.com/bloderxd/Jota'
 }
