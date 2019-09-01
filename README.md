@@ -12,15 +12,16 @@ sealed class Action {
 
 class Foo {
   
-  fun getAction() {
-    val action: Action = Action.NetworkError
-    handleAction(action) // prints NetworkError
-  }
-  
+  fun run(action: Action) = handleAction(action)
+ 
   private fun handleAction(@When action: Action.Success) = println("Success")
   private fun handleAction(@When action: Action.NetworkError) = println("NetworkError")
   private fun handleAction(@When action: Action.ParsingError) = println("ParsingError")
 }
+
+run(Action.Success) // prints Success
+run(Action.NetworkError) // prints NetworkError
+run(Action.ParsingError) // prints ParsingError
 ```
 
 Simply by using `@When` provided annotation in a type function parameter you can create a solution that implicitly infers the type and you don't need to worry about creating more code only to check them.
@@ -32,15 +33,14 @@ In Kotlin development is common to explicitly check types but sometimes a simple
 ```kotlin
 ...
 
-fun getAction() {
-  val action: Action = Action.NetworkError
+fun run(action: Action) {
   when(action) {
     is Action.Success -> handleAction(action)
     is Action.NetworkError -> handleAction(action)
     is Action.ParsingError -> handleAction(action)
     ...
     else -> {}
-  } // prints NetworkError
+  }
 }
 ```
 
@@ -55,22 +55,25 @@ As said before this kind of explicitly type checking solution breaks a very impo
 Jota provides a `@When` annotation that implicitly infers types for you then you can just worry about create extensible solutions:
 
 ```kotlin
-fun getAction() {
-  val action: Action = Action.NetworkError
-  handleAction(action) // prints NetworkError
-}
+fun run(action: Action) = handleAction(action)
 
 private fun handleAction(@When action: Action.Success) = println("Success")
 private fun handleAction(@When action: Action.NetworkError) = println("NetworkError")
 private fun handleAction(@When action: Action.ParsingError) = println("ParsingError")
+
+run(Action.Success) // prints Success
+run(Action.NetworkError) // prints NetworkError
+run(Action.ParsingError) // prints ParsingError
 ```
 
-then now if you have more types, you just need to worry about create new functions with its handling and not worry about modify any code only to add one more type checking respecting the open closed principle:
+then now if you have more types, you just need to worry about create new functions with its handling and not worry about modify any code only to add one more type checking, respecting the open closed principle:
 
 ```kotlin
 ...
 
 private fun handleAction(@When action: Action.JsonFieldError) = println("JsonFieldError")
+
+run(Action.JsonFieldError) // prints JsonFieldError
 ```
 
 ## Internals
