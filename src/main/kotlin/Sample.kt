@@ -3,7 +3,7 @@ import com.bloder.jota.When
 class Sample {
 
     fun sample() {
-        val action: Action = Action.Success
+        val action: Action = Action.NetworkError
         handle(action)
     }
 
