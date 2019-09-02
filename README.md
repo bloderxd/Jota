@@ -10,14 +10,11 @@ sealed class Action {
   object ParsingError
 }
 
-class Foo {
-  
-  fun run(action: Action) = handleAction(action)
+fun run(action: Action) = handleAction(action)
  
-  private fun handleAction(@When action: Action.Success) = println("Success")
-  private fun handleAction(@When action: Action.NetworkError) = println("NetworkError")
-  private fun handleAction(@When action: Action.ParsingError) = println("ParsingError")
-}
+private fun handleAction(@When action: Action.Success) = println("Success")
+private fun handleAction(@When action: Action.NetworkError) = println("NetworkError")
+private fun handleAction(@When action: Action.ParsingError) = println("ParsingError")
 
 run(Action.Success) // prints Success
 run(Action.NetworkError) // prints NetworkError
