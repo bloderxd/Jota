@@ -4,6 +4,8 @@ import arrow.meta.extensions.MetaComponentRegistrar
 import arrow.meta.qq.Func
 import arrow.meta.qq.func
 import matcher.DeclarativePatternMatchingPlugin
+import org.jetbrains.kotlin.com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.psi.KtFunction
 
 private const val SUPPORTED_ANNOTATION = "@When"
 
@@ -20,7 +22,7 @@ val MetaComponentRegistrar.patternMatching get() = with(DeclarativePatternMatchi
             },
             map = { func ->
                 val nameAsString = name.toString()
-                val occurrence = functionOccurrences[nameAsString] ?: nameAsString.createFunctionOccurrence(func.parent.parent.text)
+                val occurrence = functionOccurrences[nameAsString] ?: nameAsString.createFunctionOccurrence(func.findScope())
                 val type = valueParameters.asString().getType()
                 occurrence.info.add(FunctionInfo(type, body.toString()))
                 occurrence.occurrence ++
@@ -30,6 +32,9 @@ val MetaComponentRegistrar.patternMatching get() = with(DeclarativePatternMatchi
         )
     )
 }
+
+private fun KtFunction.findScope(scope: PsiElement = parent): String = if (scope.parent.text.isEmpty()) scope.text
+else findScope(scope.parent)
 
 private fun Func.FuncScope.buildFunction(type: String, occurrence: PhaseFunctionOccurrence, name: String): List<String> {
     return if (occurrence.occurrence >= occurrence.max) {

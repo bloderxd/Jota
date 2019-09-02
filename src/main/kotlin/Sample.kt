@@ -3,20 +3,17 @@ import com.bloder.jota.When
 class Sample {
 
     fun sample() {
-        val action: Action = Action.NetworkError
-        handle(action)
+        val action: Action = Action.ParsingError
+        handleAction(action)
+
     }
 
-    private fun handle(@When action: Action.Success) {
+    fun handle(@When action: Action.Success) {
         println("Success")
     }
 
-    private fun handle(@When action: Action.NetworkError) {
+    fun handle(@When action: Action.NetworkError) {
         println("NetworkError")
-    }
-
-    private fun handle(@When action: Action.ParsingError) {
-        println("ParsingError")
     }
 }
 
